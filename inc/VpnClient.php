@@ -304,8 +304,8 @@ class VpnClient {
         
         try {
             // Use old Amnezia format with Qt/QDataStream encoding
-            $payloadOld = QrUtil::encodeOldPayloadFromConf($payloadOld);
-            $dataUri = QrUtil::pngBase64($config);
+            $payloadOld = QrUtil::encodeOldPayloadFromConf($config);
+            $dataUri = QrUtil::pngBase64($payloadOld);
             return $dataUri;
         } catch (Throwable $e) {
             error_log('Failed to generate QR code: ' . $e->getMessage());
