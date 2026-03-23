@@ -86,7 +86,7 @@ class VpnClient {
         $stmt = $pdo->prepare('
             INSERT INTO vpn_clients 
             (server_id, user_id, name, client_ip, public_key, private_key, preshared_key, config, qr_code_vpn, qr_code_awg, status, expires_at) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ');
         
         $stmt->execute([
