@@ -222,7 +222,7 @@ class VpnServer {
      */
     private function createDockerfile(): void {
         $dockerfile = <<<'DOCKERFILE'
-FROM amneziavpn/amnezia-wg:latest
+FROM amneziavpn/amneziawg-go:latest
 
 LABEL maintainer="AmneziaVPN"
 
@@ -252,7 +252,7 @@ echo "Container startup"
 
 # Wait for config if not exists yet
 for i in {1..30}; do
-    if [ -f /opt/amnezia/awg/wg0.conf ]; then
+    if [ -f /opt/amnezia/awg/awg0.conf ]; then
         break
     fi
     sleep 1
@@ -262,21 +262,21 @@ done
 wg-quick down /opt/amnezia/awg/wg0.conf 2>/dev/null || true
 
 # Start daemons if configured
-if [ -f /opt/amnezia/awg/wg0.conf ]; then
-    wg-quick up /opt/amnezia/awg/wg0.conf
+if [ -f /opt/amnezia/awg/awg0.conf ]; then
+    wg-quick up /opt/amnezia/awg/awg0.conf
     echo "WireGuard started"
 else
-    echo "No wg0.conf found, skipping WireGuard startup"
+    echo "No awg0.conf found, skipping WireGuard startup"
 fi
 
 # Allow traffic on the TUN interface
-iptables -A INPUT -i wg0 -j ACCEPT 2>/dev/null || true
-iptables -A FORWARD -i wg0 -j ACCEPT 2>/dev/null || true
-iptables -A OUTPUT -o wg0 -j ACCEPT 2>/dev/null || true
+iptables -A INPUT -i awg0 -j ACCEPT 2>/dev/null || true
+iptables -A FORWARD -i awg0 -j ACCEPT 2>/dev/null || true
+iptables -A OUTPUT -o awg0 -j ACCEPT 2>/dev/null || true
 
 # Allow forwarding traffic only from the VPN
-iptables -A FORWARD -i wg0 -o eth0 -s 10.8.1.0/24 -j ACCEPT 2>/dev/null || true
-iptables -A FORWARD -i wg0 -o eth1 -s 10.8.1.0/24 -j ACCEPT 2>/dev/null || true
+iptables -A FORWARD -i awg0 -o eth0 -s 10.8.1.0/24 -j ACCEPT 2>/dev/null || true
+iptables -A FORWARD -i awg0 -o eth1 -s 10.8.1.0/24 -j ACCEPT 2>/dev/null || true
 
 iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true
 
@@ -371,20 +371,20 @@ BASH;
         $wgConfig .= "\n";
         
         $escaped = addslashes($wgConfig);
-        $this->executeCommand("docker exec -i {$containerName} sh -c 'echo \"{$escaped}\" > /opt/amnezia/awg/wg0.conf'", true);
-        $this->executeCommand("docker exec -i {$containerName} chmod 600 /opt/amnezia/awg/wg0.conf", true);
+        $this->executeCommand("docker exec -i {$containerName} sh -c 'echo \"{$escaped}\" > /opt/amnezia/awg/awg0.conf'", true);
+        $this->executeCommand("docker exec -i {$containerName} chmod 600 /opt/amnezia/awg/awg0.conf", true);
         
         // Create clientsTable
         $this->executeCommand("docker exec -i {$containerName} sh -c 'echo \"[]\" > /opt/amnezia/awg/clientsTable'", true);
         
         // Start WireGuard
-        $this->executeCommand("docker exec -i {$containerName} wg-quick up /opt/amnezia/awg/wg0.conf 2>&1", true);
+        $this->executeCommand("docker exec -i {$containerName} wg-quick up /opt/amnezia/awg/awg0.conf 2>&1", true);
         
         // Apply firewall rules
-        $this->executeCommand("docker exec -i {$containerName} sh -c 'iptables -A INPUT -i wg0 -j ACCEPT 2>/dev/null || true'", true);
-        $this->executeCommand("docker exec -i {$containerName} sh -c 'iptables -A FORWARD -i wg0 -j ACCEPT 2>/dev/null || true'", true);
-        $this->executeCommand("docker exec -i {$containerName} sh -c 'iptables -A OUTPUT -o wg0 -j ACCEPT 2>/dev/null || true'", true);
-        $this->executeCommand("docker exec -i {$containerName} sh -c 'iptables -A FORWARD -i wg0 -o eth0 -s 10.8.1.0/24 -j ACCEPT 2>/dev/null || true'", true);
+        $this->executeCommand("docker exec -i {$containerName} sh -c 'iptables -A INPUT -i awg0 -j ACCEPT 2>/dev/null || true'", true);
+        $this->executeCommand("docker exec -i {$containerName} sh -c 'iptables -A FORWARD -i awg0 -j ACCEPT 2>/dev/null || true'", true);
+        $this->executeCommand("docker exec -i {$containerName} sh -c 'iptables -A OUTPUT -o awg0 -j ACCEPT 2>/dev/null || true'", true);
+        $this->executeCommand("docker exec -i {$containerName} sh -c 'iptables -A FORWARD -i awg0 -o eth0 -s 10.8.1.0/24 -j ACCEPT 2>/dev/null || true'", true);
         $this->executeCommand("docker exec -i {$containerName} sh -c 'iptables -t nat -A POSTROUTING -s 10.8.1.0/24 -o eth0 -j MASQUERADE 2>/dev/null || true'", true);
         
         sleep(2);
