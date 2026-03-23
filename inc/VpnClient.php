@@ -191,7 +191,7 @@ class VpnClient {
         $config .= "DNS = 1.1.1.1, 1.0.0.1\n";
         
         // Add AWG parameters
-        foreach (['Jc', 'Jmin', 'Jmax', 'S1', 'S2', 'S3', 'S4', 'H1', 'H2', 'H3', 'H4', 'I1'] as $key) {
+        foreach (['Jc', 'Jmin', 'Jmax', 'S1', 'S2', 'S3', 'S4', 'H1', 'H2', 'H3', 'H4', 'I1', 'I2', "I3", 'I4', "I5"]  as $key) {
             if (isset($awgParams[$key])) {
                 $config .= "{$key} = {$awgParams[$key]}\n";
             }

@@ -347,20 +347,32 @@ BASH;
         $pubKey = trim($this->executeCommand("docker exec -i {$containerName} cat /opt/amnezia/awg/wireguard_server_public_key.key", true));
         $psk = trim($this->executeCommand("docker exec -i {$containerName} cat /opt/amnezia/awg/wireguard_psk.key", true));
         
-        // Generate AWG parameters
+        function genH() {
+            $a = rand(1800000000, 2100000000);
+            $b = $a + rand(100000, 5000000);
+            return $a . '-' . $b;
+        }
+
         $awgParams = [
-            'Jc' => 6,
+            'Jc' => rand(3, 6),
             'Jmin' => 10,
             'Jmax' => 50,
-            'S1' => rand(50, 250),
-            'S2' => rand(50, 250),
-            'S3' => rand(50, 100),
-            'S4' => rand(1, 10),
-            'H1' => rand(100000, 1000000000) .'-'. rand(1000000000, 2000000000),
-            'H2' => rand(100000, 1000000000) .'-'. rand(1000000000, 2000000000),
-            'H3' => rand(100000, 1000000000) .'-'. rand(1000000000, 2000000000),
-            'H4' => rand(100000, 1000000000) .'-'. rand(1000000000, 2000000000),
-            'I1' => "<r 2><b 0x858000010001000000000669636c6f756403636f6d0000010001c00c000100010000105a00044d583737>"
+
+            'S1' => rand(120, 200),
+            'S2' => rand(120, 200),
+            'S3' => rand(40, 80),
+            'S4' => rand(1, 5),
+
+            'H1' => genH(),
+            'H2' => genH(),
+            'H3' => genH(),
+            'H4' => genH(),
+
+            'I1' => "<r 2><b 0x858000010001000000000669636c6f756403636f6d0000010001c00c000100010000105a00044d583737>",
+            'I2' => "",
+            'I3' => "",
+            'I4' => "",
+            'I5' => "",
         ];
         
         // Create wg0.conf
