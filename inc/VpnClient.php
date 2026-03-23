@@ -77,15 +77,15 @@ class VpnClient {
         self::addClientToServer($serverData, $keys['public'], $clientIP);
         
         // Generate QR code
-        $qrCode = self::generateQRCode($config);
-        
+        $qrCode_vpn = self::generateQRCodeVpn($config);
+        $qrCode_awg = self::generateQRCodeAwg($config);
         // Calculate expiration date
         $expiresAt = $expiresInDays ? date('Y-m-d H:i:s', strtotime("+{$expiresInDays} days")) : null;
         
         // Insert into database
         $stmt = $pdo->prepare('
             INSERT INTO vpn_clients 
-            (server_id, user_id, name, client_ip, public_key, private_key, preshared_key, config, qr_code, status, expires_at) 
+            (server_id, user_id, name, client_ip, public_key, private_key, preshared_key, config, qr_code_vpn, qr_code_awg, status, expires_at) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ');
         
@@ -98,7 +98,8 @@ class VpnClient {
             $keys['private'],
             $serverData['preshared_key'],
             $config,
-            $qrCode,
+            $qrCode_vpn,
+            $qrCode_awg,
             'active',
             $expiresAt
         ]);
@@ -189,7 +190,7 @@ class VpnClient {
         $config .= "PrivateKey = {$privateKey}\n";
         $config .= "Address = {$clientIP}/32\n";
         $config .= "DNS = 1.1.1.1, 1.0.0.1\n";
-        
+        $config .= "MTU = 1370\n";
         // Add AWG parameters
         foreach (['Jc', 'Jmin', 'Jmax', 'S1', 'S2', 'S3', 'S4', 'H1', 'H2', 'H3', 'H4', '# I1', '# I2', "# I3", '# I4', "# I5"]  as $key) {
             if (isset($awgParams[$key])) {
@@ -298,13 +299,24 @@ class VpnClient {
      * Generate QR code for configuration using Amnezia format
      * Uses working QrUtil from /Users/oleg/Documents/amnezia
      */
-    private static function generateQRCode(string $config): string {
+    private static function generateQRCodeVpn(string $config): string {
         require_once __DIR__ . '/QrUtil.php';
         
         try {
             // Use old Amnezia format with Qt/QDataStream encoding
-            $payloadOld = QrUtil::encodeOldPayloadFromConf($config);
-            $dataUri = QrUtil::pngBase64($payloadOld);
+            $payloadOld = QrUtil::encodeOldPayloadFromConf($payloadOld);
+            $dataUri = QrUtil::pngBase64($config);
+            return $dataUri;
+        } catch (Throwable $e) {
+            error_log('Failed to generate QR code: ' . $e->getMessage());
+            return ''; // QR code generation failed, but continue
+        }
+    }
+    private static function generateQRCodeAwg(string $config): string {
+        require_once __DIR__ . '/QrUtil.php';
+        
+        try {
+            $dataUri = QrUtil::pngBase64($config);
             return $dataUri;
         } catch (Throwable $e) {
             error_log('Failed to generate QR code: ' . $e->getMessage());
@@ -543,7 +555,7 @@ class VpnClient {
      * Get QR code
      */
     public function getQRCode(): string {
-        return $this->data['qr_code'] ?? '';
+        return $this->data['qr_code_awg'] ?? '';
     }
     
     /**

@@ -56,7 +56,7 @@ class VpnServer {
             $data['username'],
             $data['password'],
             $data['container_name'] ?? 'amnezia-awg2',
-            $data['vpn_subnet'] ?? '10.8.1.0/24',
+            $data['vpn_subnet'] ?? '10.8.1.1/24',
             'deploying'
         ]);
         
