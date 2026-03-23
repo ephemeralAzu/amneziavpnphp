@@ -227,11 +227,11 @@ class VpnClient {
         self::executeServerCommand($serverData, $cmd1, true);
         
         // Append to wg0.conf
-        $cmd2 = sprintf("docker exec -i %s sh -c 'cat %s >> /opt/amnezia/awg/wg0.conf'", $containerName, $tempFile);
+        $cmd2 = sprintf("docker exec -i %s sh -c 'cat %s >> /opt/amnezia/awg/awg0.conf'", $containerName, $tempFile);
         self::executeServerCommand($serverData, $cmd2, true);
         
         // Apply via wg syncconf
-        $cmd3 = sprintf("docker exec -i %s bash -c 'wg syncconf wg0 <(wg-quick strip /opt/amnezia/awg/wg0.conf)'", $containerName);
+        $cmd3 = sprintf("docker exec -i %s bash -c 'wg syncconf wg0 <(wg-quick strip /opt/amnezia/awg/awg0.conf)'", $containerName);
         self::executeServerCommand($serverData, $cmd3, true);
         
         // Remove temp file
@@ -426,7 +426,7 @@ class VpnClient {
         
         // Then remove from wg0.conf file to make it persistent
         // Use a more reliable method: read, filter, write
-        $readCmd = sprintf("docker exec -i %s cat /opt/amnezia/awg/wg0.conf", $containerName);
+        $readCmd = sprintf("docker exec -i %s cat /opt/amnezia/awg/awg0.conf", $containerName);
         $config = self::executeServerCommand($serverData, $readCmd, true);
         
         // Parse and remove the peer section
@@ -435,7 +435,7 @@ class VpnClient {
         // Write back to file
         $escapedConfig = str_replace("'", "'\\''", $newConfig);
         $writeCmd = sprintf(
-            "docker exec -i %s sh -c 'echo '\''%s'\'' > /opt/amnezia/awg/wg0.conf'",
+            "docker exec -i %s sh -c 'echo '\''%s'\'' > /opt/amnezia/awg/awg0.conf'",
             $containerName,
             $escapedConfig
         );
@@ -443,7 +443,7 @@ class VpnClient {
         self::executeServerCommand($serverData, $writeCmd, true);
         
         // Save config
-        $saveCmd = sprintf("docker exec -i %s wg-quick save wg0", $containerName);
+        $saveCmd = sprintf("docker exec -i %s wg-quick save awg0", $containerName);
         self::executeServerCommand($serverData, $saveCmd, true);
         
         // Remove from clientsTable

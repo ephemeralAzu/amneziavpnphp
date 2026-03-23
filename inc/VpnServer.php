@@ -55,7 +55,7 @@ class VpnServer {
             $data['port'],
             $data['username'],
             $data['password'],
-            $data['container_name'] ?? 'amnezia-awg',
+            $data['container_name'] ?? 'amnezia-awg2',
             $data['vpn_subnet'] ?? '10.8.1.0/24',
             'deploying'
         ]);
@@ -259,7 +259,7 @@ for i in {1..30}; do
 done
 
 # Kill daemons in case of restart
-wg-quick down /opt/amnezia/awg/wg0.conf 2>/dev/null || true
+wg-quick down /opt/amnezia/awg/awg0.conf 2>/dev/null || true
 
 # Start daemons if configured
 if [ -f /opt/amnezia/awg/awg0.conf ]; then
